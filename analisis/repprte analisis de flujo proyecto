@@ -1,0 +1,667 @@
+toolName: todo_write
+            
+status: success
+          
+Todos updated: 2 items
+          
+
+        
+            
+toolName: search_codebase
+            
+status: success
+          
+query: overall structure of Analytics project, especially src, Fix, tests and legacy scripts
+          
+
+        
+            
+toolName: view_folder
+            
+status: success
+          
+d:\analytee_proyecto_pro\Analytics
+          
+
+        
+            
+toolName: view_folder
+            
+status: success
+          
+d:\analytee_proyecto_pro\Analytics\src
+          
+
+        
+            
+toolName: view_folder
+            
+status: success
+          
+d:\analytee_proyecto_pro\Analytics\Fix
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\analytee_proyecto_pro\Analytics\src\analyze_reviews.py
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\analytee_proyecto_pro\Analytics\src\analyze_reviews.py
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\analytee_proyecto_pro\Analytics\src\report_generator_professional.py
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\analytee_proyecto_pro\Analytics\src\report_generator_modern.py
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\analytee_proyecto_pro\Analytics\src\pdf_generator_modern.py
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\analytee_proyecto_pro\Analytics\src\report_generator_ai_pro_pro.py
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\analytee_proyecto_pro\Analytics\src\test_modern_reports.py
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: d:\analytee_proyecto_pro\Analytics\Fix\main_ai.py
+          
+
+        
+            
+toolName: todo_write
+            
+status: success
+          
+Todos updated: 2 items
+          
+**1. Punto de entrada: main_ai.py**
+
+- Archivo: [main_ai.py](file:///d:/analytee_proyecto_pro/Analytics/main_ai.py)
+- Uso: único punto de entrada en producción (según tu enunciado).
+- Secciones clave:
+
+Imports base y path:
+
+- Añade `src` al `sys.path`  
+  - Líneas relevantes: [main_ai.py:L5-13](file:///d:/analytee_proyecto_pro/Analytics/main_ai.py#L5-L13)  
+  - Efecto: permite importar módulos Python desde `src`.
+
+Imports de dominio:
+
+- `from analyze_reviews import run_full_pipeline`  
+- `from report_generator_ai_pro import create_report_ai_pro`  
+- `from report_generator_modern import create_modern_report`  
+- `from pdf_generator_modern import create_modern_pdf_report`  
+- `from report_generator_professional import create_professional_report`  
+  - Líneas: [main_ai.py:L15-20](file:///d:/analytee_proyecto_pro/Analytics/main_ai.py#L15-L20)
+
+Configuración efectiva:
+
+- `CONFIG` global: [main_ai.py:L26-32](file:///d:/analytee_proyecto_pro/Analytics/main_ai.py#L26-L32)  
+
+```python
+CONFIG = {
+    "openai_model": "gpt-4o-mini",
+    "openai_temperature": 0.3,
+    "output_dir": BASE_DIR / "data" / "reports",
+    "report_title": "Informe ORM y CX",
+    "use_professional_format": True,
+}
+```
+
+Flags que alteran el flujo:
+
+- `use_professional_format`:  
+  - Si `True` → usa `create_professional_report` (DOCX profesional).  
+  - Si `False` → usa `create_report_ai_pro` (formato “clásico”) desde `report_generator_ai_pro.py`.  
+  - No hay ninguna ruta desde `main_ai.py` que use `create_modern_report` o `create_modern_pdf_report` directamente.
+
+Flujo principal en `main()`:
+
+- Entrada usuario:
+  - `csv_path = input("Ruta completa del JSON del cliente: ").strip().strip('"')`
+  - Convertido a `Path`  
+    [main_ai.py:L39-45](file:///d:/analytee_proyecto_pro/Analytics/main_ai.py#L39-L45)
+- Validación existencia fichero:
+  - `if not csv_path.exists(): ... return`
+- Ejecución de pipeline:
+  - `results = run_full_pipeline(csv_path)`
+  - `df_clean = results["dataframe"]`  
+    [main_ai.py:L52-54](file:///d:/analytee_proyecto_pro/Analytics/main_ai.py#L52-L54)
+- Nombre cliente y trazabilidad:
+  - `client_name = csv_path.stem`
+  - `CONFIG["source_csv"] = str(csv_path)`  
+    [main_ai.py:L56-58](file:///d:/analytee_proyecto_pro/Analytics/main_ai.py#L56-L58)
+- Rama profesional (flag por defecto `True`):
+  - Llamada a `create_professional_report(...)`  
+    [main_ai.py:L63-72](file:///d:/analytee_proyecto_pro/Analytics/main_ai.py#L63-L72)
+- Rama clásica (solo si `use_professional_format` es `False`):
+  - Llamada a `create_report_ai_pro(...)`  
+    [main_ai.py:L79-87](file:///d:/analytee_proyecto_pro/Analytics/main_ai.py#L79-L87)
+
+Conclusión del punto de entrada:
+
+- Siempre se ejecuta `run_full_pipeline` (análisis) y luego:
+  - En configuración actual: flujo profesional (`report_generator_professional.py`)  
+  - Condicionalmente, podría usarse flujo clásico (`report_generator_ai_pro.py`) si se cambia el flag.  
+  - Flujos “modernos” (DOCX/PDF modernos) no se usan desde este `main_ai.py`.
+
+
+---
+
+**2. Grafo de ejecución desde main_ai.py**
+
+Diagrama ASCII del flujo efectivo, empezando en `main_ai.main()`:
+
+```text
+main_ai.py
+  └── main()
+      ├── input()                                # Ruta JSON cliente
+      ├── run_full_pipeline(csv_path)            # analyze_reviews.py
+      │   ├── preprocess_reviews(df)
+      │   ├── detect_fake_reviews(df, threshold)
+      │   ├── analyze_sentiment(df)
+      │   ├── extract_topics(df)
+      │   ├── extract_entities(df)
+      │   ├── extract_language_distribution(df)
+      │   └── analyze_engagement(df)
+      │       → devuelve dict results (incluye "dataframe")
+      ├── df_clean = results["dataframe"]
+      ├── client_name = csv_path.stem
+      ├── CONFIG["source_csv"] = str(csv_path)
+      └── if CONFIG["use_professional_format"]:
+          └── create_professional_report(
+                  df_clean,
+                  client_name,
+                  output_path=CONFIG["output_dir"],
+                  cfg=CONFIG,
+                  project_root="D:\\ORM_Analyzer_v2" (hardcode)
+              )
+              ├── _build_reviews_text(df)
+              ├── _load_professional_prompt(project_root)
+              ├── _call_openai_professional(full_prompt, model, temperature)
+              ├── _create_professional_rating_chart(...)
+              ├── _create_professional_sentiment_chart(...)
+              ├── _create_professional_language_chart(...)
+              ├── _create_professional_kpi_table(...)
+              ├── _create_engagement_table(...)
+              ├── _create_sentiment_analysis_table(...)
+              ├── _create_languages_table(...)
+              ├── _create_recommendations_table(...)
+              ├── _apply_professional_doc_standards(...)
+              └── doc.save(...) → DOCX profesional
+
+          else:
+          └── create_report_ai_pro(
+                  df_clean,
+                  client_name,
+                  output_path=CONFIG["output_dir"],
+                  cfg=CONFIG,
+                  project_root="D:\\ORM_Analyzer_v2"
+              )
+              ├── _load_prompt(project_root)           # prompt.txt
+              ├── _build_reviews_text(df)
+              ├── _call_openai(full_prompt, model, temperature)
+              ├── _rating_chart_by_star(...)
+              ├── _sentiment_chart(...)
+              ├── _apply_doc_standards(...)
+              └── doc.save(...) → DOCX clásico
+```
+
+A continuación detallo cada componente con archivo, función, retorno y condición.
+
+
+---
+
+**2.1. analyze_reviews.py – pipeline de análisis**
+
+Archivo: [analyze_reviews.py](file:///d:/analytee_proyecto_pro/Analytics/src/analyze_reviews.py)
+
+Función clave llamada desde `main_ai`:
+
+- `run_full_pipeline(csv_path: str, fake_threshold: float = 0.5) -> dict`  
+  - Definición: [analyze_reviews.py:L249-315](file:///d:/analytee_proyecto_pro/Analytics/src/analyze_reviews.py#L249-L315)  
+  - Siempre ejecutada en `main_ai.main()`.  
+  - Efectos:
+
+    1) Carga de datos (JSON actual):
+
+    ```python
+    csv_path = Path(csv_path)
+    if not csv_path.exists():
+        raise FileNotFoundError(...)
+    with open(csv_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    reviews = data.get("reviews", [])
+    rows = [...]
+    df = pd.DataFrame(rows)
+    ```
+
+    2) Secuencia de análisis:
+
+    - `preprocess_reviews(df)`  
+      - [analyze_reviews.py:L47-73](file:///d:/analytee_proyecto_pro/Analytics/src/analyze_reviews.py#L47-L73)  
+      - Devuelve `df` con:
+        - `rating_num` normalizado desde `rating`
+        - `clean_text`
+        - `lang`
+
+    - `detect_fake_reviews(df, threshold=fake_threshold)`  
+      - [analyze_reviews.py:L80-107](file:///d:/analytee_proyecto_pro/Analytics/src/analyze_reviews.py#L80-L107)  
+      - Devuelve un `DataFrame` filtrado (`df_filtered`), con columna `fake_prob`.
+
+    - `analyze_sentiment(df_filtered)`  
+      - [analyze_reviews.py:L114-132](file:///d:/analytee_proyecto_pro/Analytics/src/analyze_reviews.py#L114-L132)  
+      - Añade columna `sentiment`.
+
+    - `extract_topics(df_final)`  
+      - [analyze_reviews.py:L139-152](file:///d:/analytee_proyecto_pro/Analytics/src/analyze_reviews.py#L139-L152)  
+      - Devuelve `{"top_terms": [...]}` (dict).
+
+    - `extract_entities(df_final)`  
+      - [analyze_reviews.py:L155-166](file:///d:/analytee_proyecto_pro/Analytics/src/analyze_reviews.py#L155-L166)  
+      - Devuelve `{"employees": [...]}` (dict).
+
+    - `extract_language_distribution(df_final)`  
+      - [analyze_reviews.py:L169-206](file:///d:/analytee_proyecto_pro/Analytics/src/analyze_reviews.py#L169-L206)  
+      - Devuelve `{"languages": [...]}`.
+
+    - `analyze_engagement(df_final)`  
+      - [analyze_reviews.py:L209-242](file:///d:/analytee_proyecto_pro/Analytics/src/analyze_reviews.py#L209-L242)  
+      - Devuelve `engagement_stats` (dict con likes, fotos, respuesta propietario).
+
+    3) Retorno:
+
+    ```python
+    results = {
+        "source_file": str(csv_path),
+        "total_reviews": len(df),
+        "clean_reviews": len(df_final),
+        "topics": topics["top_terms"],
+        "employees": entities["employees"],
+        "languages": languages["languages"],
+        "engagement": engagement_stats,
+        "dataframe": df_final
+    }
+    ```
+
+    - Este dict es el que usa `main_ai.py`.  
+    - `dataframe` se utiliza como `df_clean` para la generación de informes.
+
+
+---
+
+**2.2. report_generator_professional.py – flujo profesional activo**
+
+Archivo: [report_generator_professional.py](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_professional.py)
+
+Función llamada desde `main_ai` cuando `use_professional_format=True`:
+
+- `create_professional_report(df, client_name, output_path, cfg, project_root=".")`  
+  - Definición y flujo principal: [report_generator_professional.py:L782-919](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_professional.py#L782-L919)  
+
+Resumen del flujo interno:
+
+1) Preparación de contexto:
+
+- `project_root = Path(project_root)`
+- `model = cfg.get("openai_model", ...)`
+- `temperature = cfg.get("openai_temperature", ...)`
+- `title = cfg.get("report_title", ...)`
+- Normalización nombre cliente:
+  - `_normalize_client_name(client_name)`  
+    [report_generator_professional.py:L36-42](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_professional.py#L36-L42)
+- Carpeta de salida:
+  - `safe_name = _safe_filename(client_clean)`  
+    [report_generator_professional.py:L44-45](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_professional.py#L44-L45)
+  - `client_dir = Path(cfg.get("output_dir", "./data/reports")) / safe_name`
+  - `client_dir.mkdir(parents=True, exist_ok=True)`
+
+2) Copia del fichero fuente:
+
+- Si `cfg["source_csv"]` existe → copia al directorio del cliente  
+  [report_generator_professional.py:L795-800](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_professional.py#L795-L800)
+
+3) Preparación del prompt y llamada a OpenAI:
+
+- Construcción de reseñas:
+  - `_build_reviews_text(df)` (definida antes en el mismo archivo).
+
+- Carga de prompt profesional embebido:
+  - `_load_professional_prompt(project_root)`  
+    - Definición del prompt: [report_generator_professional.py:L667-749](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_professional.py#L667-L749)
+
+- Sustitución placeholder:
+  - `full_prompt = professional_prompt.replace("{{reviews_text}}", reviews_text)`
+
+- Llamada a IA:
+  - `_call_openai_professional(full_prompt, model, temperature)`  
+    - Implementación: [report_generator_professional.py:L751-779](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_professional.py#L751-L779)  
+    - Usa `os.getenv("OPENAI_API_KEY")` y `OpenAI` SDK.
+
+4) Gráficos:
+
+- `_create_professional_rating_chart(...)`  
+- `_create_professional_sentiment_chart(...)`  
+- `_create_professional_language_chart(...)`  
+  - Dentro del mismo archivo, se encargan de crear PNG en `client_dir`.
+
+5) Documento DOCX:
+
+- Crea `Document()` de `python-docx`.
+- Aplica estilos profesionales:
+  - `_apply_professional_doc_standards(doc, client_clean)`  
+    [report_generator_professional.py:L77-108](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_professional.py#L77-L108)
+- Añade portada, tablas de KPIs, engagement, sentimiento, idiomas, recomendaciones, etc.  
+  - Varias funciones auxiliares `_create_*` definen tablas y secciones.
+
+6) Salida:
+
+- Se guarda un `.docx` en `client_dir` con nombre derivado (no se ve el `doc.save` en el fragmento mostrado, pero está en el bloque final del generador).
+- Devuelve la ruta del archivo como string.  
+  - Usado por `main_ai.py` para imprimir la ubicación.
+
+Condicionalidad:
+
+- `create_professional_report` se ejecuta siempre que:
+  - `CONFIG.get("use_professional_format", False)` sea `True` en `main_ai.py`.  
+  - Con el código actual, esto es el comportamiento por defecto (flag inicial).
+
+
+---
+
+**2.3. report_generator_ai_pro.py – flujo clásico condicional**
+
+Archivo: [report_generator_ai_pro.py](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_ai_pro.py)
+
+Función de entrada:
+
+- `create_report_ai_pro(df, client_name, output_path, cfg, project_root=".")`  
+  - Definición: [report_generator_ai_pro.py:L317-353](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_ai_pro.py#L317-L353)
+
+Flujo interno:
+
+1) Carga de prompt externo:
+
+- `_load_prompt(project_root)`  
+  - [report_generator_ai_pro.py:L98-104](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_ai_pro.py#L98-L104)
+  - Lee `project_root / "src" / "prompt.txt"` (archivo [prompt.txt](file:///d:/analytee_proyecto_pro/Analytics/src/prompt.txt)).
+
+2) Normalización y carpeta cliente:
+
+- `_normalize_client_name(client_name)` y `_safe_filename(...)` (en el mismo archivo).
+- Directorio: `client_dir = Path(cfg.get("output_dir", "./data/reports")) / safe_name`.
+
+3) Copia de CSV/JSON fuente:
+
+- Igual patrón que en profesional (usa `cfg["source_csv"]`).
+
+4) Generación del prompt de IA:
+
+- `reviews_text = _build_reviews_text(df)`  
+- `full_prompt = base_prompt.replace("{{reviews_text}}", reviews_text)`  
+- `ai_text = _call_openai(full_prompt, model, temperature)`  
+  - `_call_openai` usa `os.getenv("OPENAI_API_KEY")`.  
+  - Definición: [report_generator_ai_pro.py:L120-135](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_ai_pro.py#L120-L135)
+
+5) Gráficos y DOCX:
+
+- `_rating_chart_by_star`, `_sentiment_chart`, `_apply_doc_standards`.
+- Creación del documento con estructura más simple (versión “IA PRO clásica”).
+
+Condicionalidad:
+
+- Este flujo solo se ejecuta cuando:
+  - `CONFIG["use_professional_format"]` es `False`  
+  - dentro de `main_ai.py`: rama `else` [main_ai.py:L79-87](file:///d:/analytee_proyecto_pro/Analytics/main_ai.py#L79-L87)
+
+En configuración actual (flag `True`), este archivo está **conectado** al grafo pero su flujo no se ejecuta en producción salvo cambio de flag.
+
+
+---
+
+**2.4. report_generator_modern.py – generador DOCX moderno (no llamado desde main_ai)**
+
+Archivo: [report_generator_modern.py](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_modern.py)
+
+- Función principal: `create_modern_report(df, client_name, output_path, cfg, project_root=".")`  
+  - [report_generator_modern.py:L600-628](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_modern.py#L600-L628)
+- Flujo interno similar a `create_report_ai_pro`, pero con:
+  - Estética moderna
+  - Carga de `src/prompt.txt` vía `_load_prompt`  
+    [report_generator_modern.py:L560-566](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_modern.py#L560-L566)
+  - `_call_openai` análogo: [report_generator_modern.py:L582-597](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_modern.py#L582-L597)
+- Se usa en: [test_modern_reports.py](file:///d:/analytee_proyecto_pro/Analytics/src/test_modern_reports.py#L93-L100), no desde `main_ai.py`.
+- Estado respecto a `main_ai.py`: **no alcanzado en el flujo real**, aunque importado en `main_ai.py` (pero nunca llamado en el control de flujo actual).
+
+
+---
+
+**2.5. pdf_generator_modern.py – generador PDF moderno**
+
+Archivo: [pdf_generator_modern.py](file:///d:/analytee_proyecto_pro/Analytics/src/pdf_generator_modern.py)
+
+- Función principal: `create_modern_pdf_report(df, client_name, output_path, cfg, project_root=".")`  
+  - [pdf_generator_modern.py:L520-649](file:///d:/analytee_proyecto_pro/Analytics/src/pdf_generator_modern.py#L520-L649)
+- Toma:
+  - `df` con `rating_num` y `sentiment` ya calculados.
+  - `cfg["languages"]` para gráficos de idiomas.
+  - Opcionalmente `cfg["ai_analysis"]` para sección IA.
+- Genera:
+  - Gráficos PNG (rating, sentimiento, idiomas).
+  - Un PDF con tablas y secciones.
+- Uso:
+  - Importado en `main_ai.py` (`from pdf_generator_modern import create_modern_pdf_report`)  
+  - **No se llama en ningún punto de `main_ai.py`**.
+  - Usado en `test_modern_reports.py` (ruta de pruebas):  
+    [test_modern_reports.py:L135-141](file:///d:/analytee_proyecto_pro/Analytics/src/test_modern_reports.py#L135-L141)
+- Estado en flujo real desde `main_ai.py`: **no ejecutado** (solo disponible y probado vía script de test).
+
+
+---
+
+**2.6. Otros archivos y variantes**
+
+- [clean_analyze.py](file:///d:/analytee_proyecto_pro/Analytics/src/clean_analyze.py) y [Fix/clean_analyze.py](file:///d:/analytee_proyecto_pro/Analytics/Fix/clean_analyze.py)  
+  - Versiones alternativas de pipeline de análisis (comentarios indican “versión optimizada y libre de warnings”).  
+  - No son importadas en `main_ai.py`.  
+  - Estado: no alcanzables desde el flujo raíz actual.
+
+- Carpeta `Fix/`:
+  - [Fix/main_ai.py](file:///d:/analytee_proyecto_pro/Analytics/Fix/main_ai.py)  
+    - Punto de entrada alternativo basado en CSV, no JSON.  
+    - No ejecutado cuando se usa `Analytics/main_ai.py` como root.
+  - [Fix/analyze_reviews.py](file:///d:/analytee_proyecto_pro/Analytics/Fix/analyze_reviews.py)  
+    - Versión alternativa de `run_full_pipeline`.
+  - [Fix/report_generator_ai_pro.py](file:///d:/analytee_proyecto_pro/Analytics/Fix/report_generator_ai_pro.py)  
+    - Copia casi idéntica a la versión de `src/`.  
+  - [Fix/prompt.txt](file:///d:/analytee_proyecto_pro/Analytics/Fix/prompt.txt)  
+    - Duplicado del prompt V4.0.
+  - Ninguno de estos archivos en `Fix` se importa desde `Analytics/main_ai.py`.  
+    - Estado: **NO USADO – LEGACY / variantes históricas** (solo utilizable si se ejecuta explícitamente un `Fix/main_ai.py` externo al flujo actual).
+
+- [report_generator_ai_pro_pro.py](file:///d:/analytee_proyecto_pro/Analytics/src/report_generator_ai_pro_pro.py)  
+  - Generador de informe IA PRO V2.1 sin OpenAI (solo gráficos y docx).  
+  - No se importa desde `main_ai.py` ni desde otro módulo activo.
+  - Estado: **NO USADO – LEGACY**.
+
+- [src/test_modern_reports.py](file:///d:/analytee_proyecto_pro/Analytics/src/test_modern_reports.py)  
+  - Script de pruebas para formatos modernos.
+  - No invocado desde `main_ai.py`.  
+  - Estado: **NO USADO – PRUEBAS**.
+
+- [src/prompt.txt](file:///d:/analytee_proyecto_pro/Analytics/src/prompt.txt)  
+  - Prompt V4.0 usado por `_load_prompt` en:
+    - `report_generator_ai_pro.py`
+    - `report_generator_modern.py`
+  - En ejecución actual (flag profesional `True`), el prompt que se usa realmente es el embebido en `report_generator_professional.py`.  
+  - Estado:
+    - Activo solo si se habilita flujo clásico o moderno.  
+    - Desde el flujo actual profesional estricto, el archivo está **no usado en la ruta ejecutada**, pero **conectado condicionalmente**.
+
+- [config.yaml](file:///d:/analytee_proyecto_pro/Analytics/config.yaml)  
+  - Contiene `prompt_path`, `openai_model`, etc.  
+  - No hay ninguna lectura de `config.yaml` (`pyyaml` no se usa en el código actual).  
+  - Estado: **NO USADO – CONFIGURACIÓN INACTIVA**.
+
+- [src/requirements.txt](file:///d:/analytee_proyecto_pro/Analytics/src/requirements.txt)  
+  - Lista dependencias; no afecta control de flujo.
+  - Estado: metadatos del proyecto, fuera del grafo de ejecución como tal.
+
+
+---
+
+**3. Clasificación de archivos (desde main_ai.py)**
+
+Categorías solicitadas:
+
+- ACTIVO – EJECUTADO  
+- ACTIVO – CONDICIONAL  
+- NO USADO – LEGACY  
+- NO USADO – PRUEBAS  
+- NO USADO – CONFIGURACIÓN INACTIVA  
+
+Tabla con los archivos relevantes del proyecto (directorio raíz `Analytics`):
+
+| Archivo                                                | Estado                    | Motivo                                                                                          |
+|--------------------------------------------------------|---------------------------|-------------------------------------------------------------------------------------------------|
+| main_ai.py                                             | ACTIVO – EJECUTADO        | Punto de entrada real; siempre ejecutado en producción según enunciado.                        |
+| src/analyze_reviews.py                                 | ACTIVO – EJECUTADO        | Importado por `main_ai.py`; `run_full_pipeline` se ejecuta siempre.                            |
+| src/report_generator_professional.py                   | ACTIVO – EJECUTADO        | `create_professional_report` se ejecuta por defecto (`use_professional_format=True`).          |
+| src/report_generator_ai_pro.py                         | ACTIVO – CONDICIONAL      | Solo se usa si `CONFIG["use_professional_format"]` se pone a `False`.                          |
+| src/prompt.txt                                         | ACTIVO – CONDICIONAL      | Usado por `_load_prompt` en `report_generator_ai_pro` y `report_generator_modern`; no usado en flujo profesional actual. |
+| src/report_generator_modern.py                         | ACTIVO – CONDICIONAL      | Importado en `main_ai.py` y usado en `test_modern_reports.py`; no llamado en flujo `main_ai.main()` actual. |
+| src/pdf_generator_modern.py                            | ACTIVO – CONDICIONAL      | Importado en `main_ai.py` y usado en `test_modern_reports.py`; no llamado en flujo principal.  |
+| src/test_modern_reports.py                             | NO USADO – PRUEBAS        | Script de pruebas manuales; no es alcanzado desde `main_ai.py`.                                |
+| src/clean_analyze.py                                   | NO USADO – LEGACY         | Versión alternativa del pipeline; no importada desde `main_ai.py`.                             |
+| src/report_generator_ai_pro_pro.py                     | NO USADO – LEGACY         | Variante de generador IA PRO; no importada desde `main_ai.py` ni desde otros módulos activos.  |
+| src/requirements.txt                                   | NO USADO – CONFIGURACIÓN INACTIVA | Lista de dependencias; no influye en el flujo de ejecución.                           |
+| config.yaml                                            | NO USADO – CONFIGURACIÓN INACTIVA | Contiene `prompt_path` y otros parámetros; ningún módulo lo lee.                        |
+| Fix/main_ai.py                                         | NO USADO – LEGACY         | Punto de entrada alternativo basado en CSV; no es el `main_ai.py` de producción.               |
+| Fix/analyze_reviews.py                                 | NO USADO – LEGACY         | Pipeline alternativo; no importado desde `Analytics/main_ai.py`.                               |
+| Fix/report_generator_ai_pro.py                         | NO USADO – LEGACY         | Versión duplicada de generador clásico; no importada en flujo actual.                          |
+| Fix/clean_analyze.py                                   | NO USADO – LEGACY         | Variante de análisis; no referenciada.                                                          |
+| Fix/prompt.txt                                         | NO USADO – LEGACY         | Copia de prompt V4.0; solo para las variantes de `Fix`.                                         |
+| Tapa_Tapa_Plaça_Reial.json                             | ACTIVO – EJECUTADO (datos)| Fichero de datos de reseñas; leído por `run_full_pipeline` cuando se pasa como ruta JSON.      |
+| .venv/**                                               | NO DETERMINABLE DESDE EL CÓDIGO ACTUAL | Entorno virtual con dependencias; no forma parte del código de aplicación.           |
+
+Notas:
+
+- El estado “ACTIVO – CONDICIONAL” significa: conectado al grafo desde `main_ai.py` o usado por scripts de prueba, pero no ejecutado en el camino configurado actualmente (`use_professional_format=True` y sólo corriendo `main_ai.py`).
+- Los ficheros bajo `Fix/` son alternativas históricas o de depuración; sólo se ejecutan si explícitamente se llama a ese `Fix/main_ai.py`, lo cual no sucede en el flujo descrito.
+
+
+---
+
+**4. Mapa visual compacto del sistema real**
+
+Mapa centrado en flujo habitual (profesional):
+
+```text
+main_ai.py
+  └── main()
+      ├── input() → Path(csv_path)
+      ├── run_full_pipeline(csv_path)           [src/analyze_reviews.py]
+      │   ├── preprocess_reviews(df)
+      │   ├── detect_fake_reviews(df)
+      │   ├── analyze_sentiment(df)
+      │   ├── extract_topics(df)
+      │   ├── extract_entities(df)
+      │   ├── extract_language_distribution(df)
+      │   └── analyze_engagement(df)
+      │       → results: { dataframe, topics, employees, languages, engagement, ... }
+      ├── df_clean = results["dataframe"]
+      ├── CONFIG["source_csv"] = str(csv_path)
+      └── if use_professional_format (True):
+          └── create_professional_report(...)   [src/report_generator_professional.py]
+              ├── _build_reviews_text(df_clean)
+              ├── _load_professional_prompt(project_root)
+              ├── _call_openai_professional(full_prompt, model, temp)
+              ├── _create_professional_* charts/tables
+              ├── _apply_professional_doc_standards(doc, client)
+              └── doc.save() → DOCX profesional en BASE_DIR/data/reports/<cliente>/
+
+        else:
+          └── create_report_ai_pro(...)         [src/report_generator_ai_pro.py]
+              ├── _load_prompt(project_root)    # src/prompt.txt
+              ├── _build_reviews_text(df_clean)
+              ├── _call_openai(full_prompt, model, temp)
+              ├── _rating_chart_by_star, _sentiment_chart
+              ├── _apply_doc_standards(doc, client)
+              └── doc.save() → DOCX clásico
+```
+
+Otros flujos potenciales (no usados desde `main_ai.py` actual):
+
+```text
+test_modern_reports.py
+  ├── create_modern_report(...)       [src/report_generator_modern.py]
+  └── create_modern_pdf_report(...)   [src/pdf_generator_modern.py]
+```
+
+---
+
+**5. Puntos NO determinables desde el código actual**
+
+- No es determinable desde el código:
+  - Qué fichero JSON concreto se usa en producción en cada ejecución (depende del input humano en `main_ai.main()`).
+  - Si en algún entorno operativo se modifica `CONFIG["use_professional_format"]` dinámicamente antes de llamar a `main()` (no se ve en este repositorio).
+  - Si existen otros entrypoints externos (por ejemplo, otro script o framework que invoque funciones internas) fuera del `main_ai.py` proporcionado.
+
+Todo lo anterior está reconstruido exclusivamente a partir del código actual y del flujo que parte de `Analytics/main_ai.py`.

@@ -1,0 +1,16 @@
+- Mismo input ⇒ mismo DOCX/PDF (contenido visible).  
+- No iterar dict/set sin orden estable.
+- En prod: o se generan DOCX+PDF+execution_log.json válidos o exit code ≠ 0.  
+- validate_output_contract debe pasar siempre en prod.
+- run_quality_checks se ejecuta tras guardar el DOCX.  
+- Texto prohibido: None, NO DISPONIBLE, rutas locales.  
+- Fallo de QA ⇒ excepción.
+- No cambiar rutas, nombres de archivos ni firmas públicas sin indicación explícita.  
+- Cambios mínimos y localizados.
+- El generador es el único responsable del execution_log.json.  
+- El entrypoint no debe reescribir artefactos.
+- No refactors cosméticos.  
+- No cambios de formato no solicitados.
+- El proyecto debe cargar automáticamente variables desde `.env` si existe.
+- Nunca asumir que el usuario exportó variables manualmente.
+- En modo `prod`, las variables críticas deben validarse y fallar explícitamente.

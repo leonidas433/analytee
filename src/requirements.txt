@@ -1,0 +1,14 @@
+pandas
+numpy
+matplotlib
+python-docx
+langdetect
+scikit-learn
+spacy
+gensim
+plotly
+streamlit
+openai
+pyyaml
+reportlab
+docx2pdf

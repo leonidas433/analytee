@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+.env.*
+!.env.example
+.venv
+venv/
+
+# OS / IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Outputs y datos sensibles
+data/reports/
+data/reports_perf_validation/
+*.docx
+*.pdf
+
+# Logs temporales
+*.log
+
+# Credenciales
+config.yaml
+secrets.*

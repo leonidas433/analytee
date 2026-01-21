@@ -1,0 +1,31 @@
+main_ai.py
+  └── main()
+      ├── input() → Path(csv_path)
+      ├── run_full_pipeline(csv_path)           [src/analyze_reviews.py]
+      │   ├── preprocess_reviews(df)
+      │   ├── detect_fake_reviews(df)
+      │   ├── analyze_sentiment(df)
+      │   ├── extract_topics(df)
+      │   ├── extract_entities(df)
+      │   ├── extract_language_distribution(df)
+      │   └── analyze_engagement(df)
+      │       → results: { dataframe, topics, employees, languages, engagement, ... }
+      ├── df_clean = results["dataframe"]
+      ├── CONFIG["source_csv"] = str(csv_path)
+      └── if use_professional_format (True):
+          └── create_professional_report(...)   [src/report_generator_professional.py]
+              ├── _build_reviews_text(df_clean)
+              ├── _load_professional_prompt(project_root)
+              ├── _call_openai_professional(full_prompt, model, temp)
+              ├── _create_professional_* charts/tables
+              ├── _apply_professional_doc_standards(doc, client)
+              └── doc.save() → DOCX profesional en BASE_DIR/data/reports/<cliente>/
+
+        else:
+          └── create_report_ai_pro(...)         [src/report_generator_ai_pro.py]
+              ├── _load_prompt(project_root)    # src/prompt.txt
+              ├── _build_reviews_text(df_clean)
+              ├── _call_openai(full_prompt, model, temp)
+              ├── _rating_chart_by_star, _sentiment_chart
+              ├── _apply_doc_standards(doc, client)
+              └── doc.save() → DOCX clásico

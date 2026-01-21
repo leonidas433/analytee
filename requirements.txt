@@ -1,0 +1,9 @@
+python-docx
+docx2pdf
+pandas
+matplotlib
+numpy
+langdetect
+python-dateutil
+python-dotenv
+
