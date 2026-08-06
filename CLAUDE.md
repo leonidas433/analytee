@@ -2,8 +2,8 @@
 
 ## Overview
 
-Pipeline en Python que analiza reseñas de clientes (JSON exportado de Google,
-p. ej. `Tapa_Tapa_Plaça_Reial.json`) y genera un informe ORM/CX profesional en
+Pipeline en Python que analiza reseñas de clientes (JSON exportado de Google)
+y genera un informe ORM/CX profesional en
 DOCX + PDF con análisis asistido por IA (OpenAI). El flujo completo es:
 limpieza → análisis (métricas, idiomas, engagement, detección de reseñas
 falsas) → generación de informe → validación de calidad → `execution_log.json`.
