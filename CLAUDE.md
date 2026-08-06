@@ -1,59 +1,65 @@
-# Analytee Analytics (ORM Analyzer IA PRO)
+# Analytee Analytics — ORM Analyzer IA PRO
 
-## Overview
+Pipeline en Python que analiza reseñas de clientes (JSON exportado de Google Maps)
+y genera informes profesionales en DOCX + PDF con ayuda de OpenAI.
 
-Pipeline en Python que analiza reseñas de clientes (JSON exportado de Google)
-y genera un informe ORM/CX profesional en
-DOCX + PDF con análisis asistido por IA (OpenAI). El flujo completo es:
-limpieza → análisis (métricas, idiomas, engagement, detección de reseñas
-falsas) → generación de informe → validación de calidad → `execution_log.json`.
+## Stack
 
-## Stack tecnológico
-
-- Python 3.10+ (usa `str | None`, f-strings, `pathlib`)
-- OpenAI API (`gpt-4o-mini` por defecto; requiere `OPENAI_API_KEY` en `.env`)
-- pandas / numpy / matplotlib para análisis y gráficas
-- python-docx (DOCX), docx2pdf y generador propio de PDF (`src/pdf_generator_modern.py`)
-- langdetect, python-dateutil, python-dotenv, PyYAML
+- Python 3 (sin framework web; se ejecuta como CLI)
+- OpenAI API (`gpt-4o-mini` por defecto, configurable en `config.yaml`)
+- `python-docx` + `docx2pdf` / `reportlab` para los informes
+- `pandas`, `numpy`, `matplotlib` para el análisis
+- Dependencias: `src/requirements.txt` es la lista completa (incluye `openai`,
+  `pyyaml`, `reportlab`); el `requirements.txt` de la raíz es un subconjunto.
 
 ## Comandos
 
 ```bash
-# Instalar dependencias
-pip install -r requirements.txt          # raíz
-pip install -r src/requirements.txt      # dependencias adicionales de src/
+pip install -r src/requirements.txt
 
-# Ejecutar en desarrollo (pide la ruta del JSON o acepta --input)
+# Modo dev (pide la ruta del JSON o acepta --input)
 python main_ai.py --mode dev --input ruta/al/cliente.json
 
-# Ejecutar en producción (exige --input y OPENAI_API_KEY; exit code ≠ 0 si falla)
+# Modo prod (requiere OPENAI_API_KEY y --input; exit code ≠ 0 si algo falla)
 python main_ai.py --mode prod --input ruta/al/cliente.json
 
-# Tests de generación de informes
+# Prueba de los formatos modernos con datos sintéticos (sin API key)
 python src/test_modern_reports.py
-```
 
-Configuración opcional en `config.yaml` (no versionado): secciones `openai`,
-`report`, `paths`, `analysis`, `metrics`. Los valores por defecto están en
-`DEFAULT_CONFIG` de `main_ai.py`.
+# Auditar la estructura de un DOCX generado
+python audit_docx_structure.py
+```
 
 ## Estructura
 
-- `main_ai.py` — entrypoint: carga `.env`, config y orquesta el pipeline
-- `src/analyze_reviews.py` — limpieza + análisis (`run_full_pipeline`)
-- `src/report_generator_professional.py` — informe profesional, contrato de
-  salida (`PIPELINE_VERSION`, `validate_output_contract`, `run_quality_checks`)
-- `src/report_generator_ai_pro.py` / `report_generator_modern.py` — otros formatos
-- `src/pdf_generator_modern.py` — PDF
-- `ai_models/` — prompts de las fases de análisis
-- `data/reports/` — salida (no versionada)
+- `main_ai.py` — entrypoint: carga `.env` y `config.yaml`, ejecuta el pipeline
+  y escribe `execution_log.json`. No reescribe artefactos del generador.
+- `src/analyze_reviews.py` — limpieza + análisis (`run_full_pipeline`).
+- `src/report_generator_professional.py` — generador principal (formato
+  profesional), dueño de `execution_log.json`, QA y contrato de salida.
+- `src/report_generator_modern.py` / `src/pdf_generator_modern.py` — formatos
+  modernos DOCX/PDF. `src/report_generator_ai_pro.py` — formato clásico.
+- `src/metrics_invisibles*.py`, `src/analysis_*.py` — métricas y análisis IA.
+- `ai_models/` — prompts de IA (markdown). `analisis/` — notas de arquitectura.
+- Salida: `data/reports/<cliente>/v<PIPELINE_VERSION>/` (ignorada por git).
+
+## Contrato de salida en prod
+
+En `--mode prod` la ejecución **o** produce DOCX + PDF + `execution_log.json`
+válidos **o** termina con exit code ≠ 0 (10 QA, 11 contrato, 12 entrada/error,
+13 falta API key). `validate_output_contract` y `run_quality_checks` deben
+pasar siempre; un fallo de QA lanza excepción, nunca se degrada en silencio.
+
+## Configuración
+
+- `.env` (no versionado; ver `.env.example`): `OPENAI_API_KEY`. El proyecto
+  la carga automáticamente si existe — nunca asumir export manual.
+- `config.yaml` (no versionado): modelo, temperatura, formato, `output_dir`,
+  `output_mode` (CLIENT/AUDIT), umbral de reseñas falsas, versión de métricas.
 
 ## Reglas del proyecto
 
-Las reglas obligatorias están en `.claude/rules/`:
+Ver reglas completas (obligatorias) en:
 
-- `output-contract.md` — determinismo, contrato de salida prod y QA
-- `code-style.md` — estilo de cambios y manejo de variables de entorno
-
-Exit codes en prod: 10 = fallo QA, 11 = contrato de salida, 12 = error de
-entrada/no controlado, 13 = falta `OPENAI_API_KEY`.
+@.claude/rules/output-contract.md
+@.claude/rules/code-style.md

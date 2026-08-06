@@ -1,13 +1,10 @@
-# Estilo de cambios y entorno
+# Estilo de código y alcance de cambios
 
-- Cambios mínimos y localizados. No refactors cosméticos ni cambios de formato
-  no solicitados.
+- Cambios mínimos y localizados; nada fuera de lo pedido.
 - No cambiar rutas, nombres de archivos ni firmas públicas sin indicación
   explícita.
-- El proyecto debe cargar automáticamente variables desde `.env` si existe
-  (ver `_load_env_once()` en `main_ai.py`). Nunca asumir que el usuario
-  exportó variables manualmente.
+- No refactors cosméticos ni cambios de formato no solicitados.
+- El proyecto debe cargar automáticamente variables desde `.env` si existe.
+- Nunca asumir que el usuario exportó variables manualmente.
 - En modo `prod`, las variables críticas (p. ej. `OPENAI_API_KEY`) deben
-  validarse al inicio y fallar explícitamente si faltan.
-- Nunca commitear credenciales: `.env`, `config.yaml` y `secrets.*` están en
-  `.gitignore` y deben seguir estándolo.
+  validarse y fallar explícitamente si faltan.

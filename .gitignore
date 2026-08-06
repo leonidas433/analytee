@@ -27,6 +27,6 @@ data/reports_perf_validation/
 config.yaml
 secrets.*
 
-# Claude Code (archivos locales, no compartir)
+# Claude Code (archivos locales por usuario)
 CLAUDE.local.md
 .claude/settings.local.json
