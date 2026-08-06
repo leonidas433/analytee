@@ -77,7 +77,8 @@ qué pregunta responde la auditoría.
 - **Opciones**: Claude Code, Aider (open source, cualquier LLM), OpenHands.
 - **Detección**: `.claude/` (CLAUDE.md, skills, rules), `.aider*`.
 - **Auditoría**: ¿hay CLAUDE.md con comandos y reglas? ¿Los flujos repetidos
-  están capturados como skills/comandos?
+  están capturados como skills/comandos? Para auditar cada agente definido
+  uno a uno, usar la checklist de [AGENTS.md](AGENTS.md).
 
 ## 9. Memoria, datos y caché
 

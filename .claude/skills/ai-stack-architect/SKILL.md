@@ -10,6 +10,8 @@ código en el proyecto, usar **Auditar**.
 
 La referencia canónica de las 12 capas (herramientas gratuitas, heurísticas
 de detección y preguntas de auditoría) está en [STACK.md](STACK.md).
+Para auditar o crear agentes individuales (`.claude/agents/*.md`), usar la
+plantilla y checklist de [AGENTS.md](AGENTS.md).
 
 ## Modo Auditar (proyecto existente)
 
